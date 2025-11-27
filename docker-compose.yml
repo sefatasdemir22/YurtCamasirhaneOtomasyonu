@@ -1,0 +1,19 @@
+# Dosya: /YurtCamasirhane/docker-compose.yml
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    container_name: laundry_db
+    restart: always
+    environment:
+      POSTGRES_USER: sefa
+      POSTGRES_PASSWORD: sifre123
+      POSTGRES_DB: laundry_system
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
