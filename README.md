@@ -21,11 +21,13 @@ Bu proje, üniversite yurtlarındaki çamaşırhane yoğunluğunu yönetmek, adi
 
 Bu proje **Modern Yazılım Mimarisi** prensiplerine uygun olarak geliştirilmiştir.
 
-* **Frontend:** React.js (Vite), Material UI (MUI), Recharts, Axios
-* **Backend:** Node.js, Express.js
-* **Veritabanı:** PostgreSQL (İlişkisel Veritabanı)
-* **DevOps:** Docker & Docker Compose (Konteyner Mimarisi)
-* **Güvenlik:** BCrypt (Şifreleme), JWT (Token), Middleware Koruması
+| Alan | Teknoloji |
+|---|---|
+| **Frontend** | React.js (Vite), Material UI (MUI), Recharts, Axios |
+| **Backend** | Node.js, Express.js |
+| **Veritabanı** | PostgreSQL (İlişkisel Veritabanı) |
+| **DevOps** | Docker & Docker Compose (Konteyner Mimarisi) |
+| **Güvenlik** | BCrypt (Şifreleme), JWT (Token), Middleware Koruması |
 
 ## ⚙️ Kurulum ve Çalıştırma
 
@@ -36,7 +38,7 @@ Projeyi yerel ortamınızda çalıştırmak için aşağıdaki adımları izleyi
 * Docker Desktop (Veritabanı için)
 
 ### 2. Projeyi İndirin
-git clone https://github.com/KULLANICI_ADINIZ/YurtCamasirhaneOtomasyonu.git
+git clone https://github.com/sefatasdemir22/YurtCamasirhaneOtomasyonu.git
 cd YurtCamasirhaneOtomasyonu
 
 ### 3. Veritabanını Başlatın (Docker)
@@ -70,4 +72,4 @@ Sistemi denemek için aşağıdaki hazır kullanıcıları kullanabilirsiniz:
 
 ---
 **Geliştirici:** Sefa Taşdemir
-**Ders:** BİL403 Yazılım Mühendisliği - Dönem Projesi
+**Ders:** BİL403 Yazılım Mühendisliği - Dönem Projesig
