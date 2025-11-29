@@ -72,4 +72,4 @@ Sistemi denemek için aşağıdaki hazır kullanıcıları kullanabilirsiniz:
 
 ---
 **Geliştirici:** Sefa Taşdemir
-**Ders:** BİL403 Yazılım Mühendisliği - Dönem Projesig
+**Ders:** BİL403 Yazılım Mühendisliği - Dönem Projesi
