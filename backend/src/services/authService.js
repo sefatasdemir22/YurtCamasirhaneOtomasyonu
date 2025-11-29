@@ -1,9 +1,8 @@
 const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken'); // <-- Bunu eklemeyi unutma
+const jwt = require('jsonwebtoken');
 
 const register = async (username, password, blockName) => {
-  // ... (Buradaki eski kodlar aynen kalsın) ...
   const userCheck = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
   if (userCheck.rows.length > 0) throw new Error('Bu kullanıcı adı zaten alınmış.');
 
@@ -17,7 +16,7 @@ const register = async (username, password, blockName) => {
   return newUser.rows[0];
 };
 
-// YENİ EKLENEN KISIM: LOGIN FONKSİYONU
+// LOGIN FONKSİYONU
 const login = async (username, password) => {
   // 1. Kullanıcıyı bul
   const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
@@ -31,12 +30,12 @@ const login = async (username, password) => {
 
   // 3. Token oluştur (Kimlik Kartı)
   const token = jwt.sign(
-    { id: user.id, role: user.role, blockName: user.block_name }, // Kartın içine yazılacak bilgiler
+    { id: user.id, role: user.role, blockName: user.block_name },
     process.env.JWT_SECRET,
-    { expiresIn: '1d' } // 1 gün geçerli
+    { expiresIn: '1d' } 
   );
 
   return { token, user };
 };
 
-module.exports = { register, login }; // login'i dışarı açtık
+module.exports = { register, login };

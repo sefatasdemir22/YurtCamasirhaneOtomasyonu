@@ -8,7 +8,9 @@ import LocalLaundryServiceIcon from '@mui/icons-material/LocalLaundryService';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import LogoutIcon from '@mui/icons-material/Logout';
 import EventIcon from '@mui/icons-material/Event';
-import SettingsIcon from '@mui/icons-material/Settings'; // Admin ikonu
+import SettingsIcon from '@mui/icons-material/Settings'; 
+import ListAltIcon from '@mui/icons-material/ListAlt';
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import api from '../api';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,13 +19,8 @@ const Dashboard = () => {
   const [open, setOpen] = useState(false);
   const [selectedMachine, setSelectedMachine] = useState(null);
   
-  // Tarihi en tepede tutuyoruz (Bugünün tarihi varsayılan)
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
-  
-  // Kota bilgileri
   const [quota, setQuota] = useState({ washCount: 0, dryCount: 0 });
-
-  // Dolu saatler listesi (O an tıklanan makine için)
   const [takenSlots, setTakenSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   
@@ -39,17 +36,12 @@ const Dashboard = () => {
     { start: '20:00', end: '21:00' }, { start: '21:00', end: '22:00' },
   ];
 
-  // 1. Makineleri ve Kotayı Getir
   const fetchData = useCallback(async () => {
     try {
-      // Makineler
       const machinesRes = await api.get('/appointments/machines');
       setMachines(machinesRes.data);
-
-      // Kota (Seçili tarih için)
       const quotaRes = await api.get(`/appointments/quota?date=${selectedDate}`);
       setQuota(quotaRes.data);
-
     } catch (err) {
       if (err.response && err.response.status === 401) navigate('/');
     }
@@ -59,29 +51,24 @@ const Dashboard = () => {
     fetchData();
   }, [fetchData]);
 
-  // 2. Randevu Penceresini Aç
   const handleOpenModal = async (machine) => {
     setSelectedMachine(machine);
     setMessage({ type: '', text: '' });
     setSelectedSlot(null);
     setOpen(true);
-
-    // Bu makinenin o günkü dolu saatlerini çek
     try {
       const res = await api.get(`/appointments/availability?machineId=${machine.id}&date=${selectedDate}`);
-      setTakenSlots(res.data); // Örn: ["09:00", "14:00"]
+      setTakenSlots(res.data);
     } catch (error) {
       console.error("Müsaitlik durumu alınamadı");
     }
   };
 
-  // 3. Randevuyu Kaydet
   const handleBook = async () => {
     if (!selectedSlot) {
       setMessage({ type: 'warning', text: 'Lütfen bir saat seçiniz!' });
       return;
     }
-
     try {
       await api.post('/appointments/book', {
         machineId: selectedMachine.id,
@@ -89,12 +76,23 @@ const Dashboard = () => {
         slotStart: selectedSlot.start,
         slotEnd: selectedSlot.end
       });
-      
       setMessage({ type: 'success', text: 'Randevu Başarılı! 🎉' });
-      fetchData(); // Kotayı güncelle
+      fetchData(); 
       setTimeout(() => setOpen(false), 1500);
     } catch (err) {
       setMessage({ type: 'error', text: err.response?.data?.error || 'Hata oluştu.' });
+    }
+  };
+
+  // Arıza Bildirimi Fonksiyonu
+  const handleReport = async (machine) => {
+    const desc = prompt("Sorun nedir? (Örn: Çalışmıyor, Su kaçırıyor)");
+    if (!desc) return;
+    try {
+      await api.post('/appointments/report', { machineId: machine.id, description: desc });
+      alert('Bildiriminiz yöneticiye iletildi. Teşekkürler! 🙏');
+    } catch (err) {
+      alert('Bildirim gönderilemedi.');
     }
   };
 
@@ -114,13 +112,19 @@ const Dashboard = () => {
             Yurt Otomasyon
           </Typography>
           
-          {/* YÖNETİCİ BUTONU (Sadece admin görür) */}
+          {/* Randevularım Butonu */}
+          <Button 
+            color="inherit" 
+            startIcon={<ListAltIcon />} 
+            sx={{ mr: 2 }}
+            onClick={() => navigate('/my-appointments')}
+          >
+            RANDEVULARIM
+          </Button>
+
           {localStorage.getItem('userRole') === 'admin' && (
             <Button 
-              color="secondary" 
-              variant="contained" 
-              startIcon={<SettingsIcon />} 
-              sx={{ mr: 2, fontWeight: 'bold' }}
+              color="secondary" variant="contained" startIcon={<SettingsIcon />} sx={{ mr: 2, fontWeight: 'bold' }}
               onClick={() => navigate('/admin')}
             >
               YÖNETİCİ PANELİ
@@ -134,11 +138,8 @@ const Dashboard = () => {
       </AppBar>
 
       <Container maxWidth="lg" sx={{ mt: 4 }}>
-        
-        {/* ÜST BİLGİ KARTI: Tarih ve Kotalar */}
         <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 3 }}>
           <Grid container spacing={3} alignItems="center">
-            {/* Tarih Seçici */}
             <Grid item xs={12} md={4}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <EventIcon color="primary" sx={{ fontSize: 30 }} />
@@ -149,11 +150,11 @@ const Dashboard = () => {
                   onChange={(e) => setSelectedDate(e.target.value)}
                   InputLabelProps={{ shrink: true }}
                   fullWidth
+                  // Geçmiş tarihi engelleme
+                  inputProps={{ min: new Date().toISOString().slice(0, 10) }} 
                 />
               </Box>
             </Grid>
-
-            {/* Kalan Haklar */}
             <Grid item xs={12} md={8}>
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="flex-end">
                 <Alert icon={<LocalLaundryServiceIcon fontSize="inherit" />} severity="info" sx={{ width: '100%' }}>
@@ -171,120 +172,57 @@ const Dashboard = () => {
           {selectedDate} Tarihi İçin Müsait Makineler
         </Typography>
 
-        {/* MAKİNE KARTLARI */}
         <Grid container spacing={3}>
-          {machines.length > 0 ? (
-            machines.map((machine) => (
-              <Grid item key={machine.id} xs={12} sm={6} md={4}>
-                <Card sx={{ 
-                  height: '100%', borderRadius: 3, transition: '0.3s',
-                  '&:hover': { transform: 'translateY(-5px)', boxShadow: 6 }
-                }}>
-                  <CardContent sx={{ textAlign: 'center', pt: 4 }}>
-                    {machine.type === 'wash' ? (
-                      <LocalLaundryServiceIcon sx={{ fontSize: 70, color: '#2563eb', mb: 2 }} />
-                    ) : (
-                      <WbSunnyIcon sx={{ fontSize: 70, color: '#ea580c', mb: 2 }} />
-                    )}
-                    
-                    <Typography variant="h5" fontWeight="bold">
-                      {machine.type === 'wash' ? 'Çamaşır' : 'Kurutma'} {machine.machine_number}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      Blok: {machine.block_name}
-                    </Typography>
-                    
-                    <Chip 
-                      label={machine.status === 'active' ? 'AKTİF' : 'BAKIMDA'} 
-                      color={machine.status === 'active' ? 'success' : 'error'} 
-                      size="small" 
-                    />
-                  </CardContent>
-                  <CardActions sx={{ justifyContent: 'center', pb: 3 }}>
-                    <Button 
-                      variant="contained" 
-                      fullWidth
-                      sx={{ mx: 2, bgcolor: machine.type === 'wash' ? '#2563eb' : '#ea580c' }}
-                      onClick={() => handleOpenModal(machine)}
-                      disabled={machine.status !== 'active'}
-                    >
-                      SAAT SEÇ & RANDEVU AL
-                    </Button>
-                  </CardActions>
-                </Card>
-              </Grid>
-            ))
-          ) : (
-            <Grid item xs={12}>
-              <Alert severity="warning">Bu blokta henüz makine eklenmemiş.</Alert>
+          {machines.map((machine) => (
+            <Grid item key={machine.id} xs={12} sm={6} md={4}>
+              <Card sx={{ height: '100%', borderRadius: 3, transition: '0.3s', '&:hover': { transform: 'translateY(-5px)', boxShadow: 6 } }}>
+                <CardContent sx={{ textAlign: 'center', pt: 4 }}>
+                  {machine.type === 'wash' ? <LocalLaundryServiceIcon sx={{ fontSize: 70, color: '#2563eb', mb: 2 }} /> : <WbSunnyIcon sx={{ fontSize: 70, color: '#ea580c', mb: 2 }} />}
+                  <Typography variant="h5" fontWeight="bold">{machine.type === 'wash' ? 'Çamaşır' : 'Kurutma'} {machine.machine_number}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Blok: {machine.block_name}</Typography>
+                  <Chip label={machine.status === 'active' ? 'AKTİF' : 'BAKIMDA'} color={machine.status === 'active' ? 'success' : 'error'} size="small" />
+                </CardContent>
+                <CardActions sx={{ justifyContent: 'center', pb: 3, flexDirection: 'column', gap: 1 }}>
+                  <Button variant="contained" fullWidth sx={{ mx: 2, bgcolor: machine.type === 'wash' ? '#2563eb' : '#ea580c' }} onClick={() => handleOpenModal(machine)} disabled={machine.status !== 'active'}>
+                    SAAT SEÇ & RANDEVU AL
+                  </Button>
+                  
+                  {/* Arıza Bildir Butonu */}
+                  <Button size="small" color="error" startIcon={<ReportProblemIcon />} onClick={() => handleReport(machine)}>
+                    Arıza Bildir
+                  </Button>
+                </CardActions>
+              </Card>
             </Grid>
-          )}
+          ))}
         </Grid>
       </Container>
 
-      {/* RANDEVU MODALI */}
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold' }}>
-          Saat Seçimi
-        </DialogTitle>
+        <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold' }}>Saat Seçimi</DialogTitle>
         <DialogContent>
           <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <Typography variant="subtitle1">
-              {selectedMachine?.type === 'wash' ? 'Çamaşır' : 'Kurutma'} Makinesi {selectedMachine?.machine_number}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Tarih: {selectedDate}
-            </Typography>
+            <Typography variant="subtitle1">{selectedMachine?.type === 'wash' ? 'Çamaşır' : 'Kurutma'} Makinesi {selectedMachine?.machine_number}</Typography>
+            <Typography variant="body2" color="text.secondary">Tarih: {selectedDate}</Typography>
           </Box>
-          
-          {message.text && (
-            <Alert severity={message.type} sx={{ mb: 2 }}>{message.text}</Alert>
-          )}
-
-          {/* SAATLER (IZGARA) */}
+          {message.text && <Alert severity={message.type} sx={{ mb: 2 }}>{message.text}</Alert>}
           <Grid container spacing={1}>
             {timeSlots.map((slot, index) => {
               const isTaken = takenSlots.includes(slot.start);
               const isSelected = selectedSlot?.start === slot.start;
-
               return (
                 <Grid item xs={4} sm={3} key={index}>
-                  <Button
-                    variant={isSelected ? "contained" : "outlined"}
-                    color={isTaken ? "error" : "primary"}
-                    fullWidth
-                    disabled={isTaken} 
-                    onClick={() => setSelectedSlot(slot)}
-                    sx={{ 
-                      py: 1, 
-                      textDecoration: isTaken ? 'line-through' : 'none',
-                      bgcolor: isTaken ? '#ffebee' : '' 
-                    }}
-                  >
+                  <Button variant={isSelected ? "contained" : "outlined"} color={isTaken ? "error" : "primary"} fullWidth disabled={isTaken} onClick={() => setSelectedSlot(slot)} sx={{ py: 1, textDecoration: isTaken ? 'line-through' : 'none', bgcolor: isTaken ? '#ffebee' : '' }}>
                     {slot.start}
                   </Button>
                 </Grid>
               );
             })}
           </Grid>
-          
-          {takenSlots.length > 0 && (
-            <Typography variant="caption" color="error" sx={{ display: 'block', mt: 2, textAlign: 'center' }}>
-              * Kırmızı işaretli saatler doludur.
-            </Typography>
-          )}
-
         </DialogContent>
         <DialogActions sx={{ p: 3, justifyContent: 'center' }}>
           <Button onClick={() => setOpen(false)} color="inherit" sx={{ mr: 2 }}>Vazgeç</Button>
-          <Button 
-            onClick={handleBook} 
-            variant="contained" 
-            size="large"
-            disabled={!selectedSlot} 
-          >
-            ONAYLA VE BİTİR
-          </Button>
+          <Button onClick={handleBook} variant="contained" size="large" disabled={!selectedSlot}>ONAYLA VE BİTİR</Button>
         </DialogActions>
       </Dialog>
     </Box>

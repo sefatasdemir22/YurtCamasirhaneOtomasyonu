@@ -1,4 +1,4 @@
--- Eğer varsa eski tabloları temizle (Hata almamak için)
+-- Eğer varsa eski tabloları temizle
 DROP TABLE IF EXISTS appointments;
 DROP TABLE IF EXISTS machines;
 DROP TABLE IF EXISTS users;

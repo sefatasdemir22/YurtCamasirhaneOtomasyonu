@@ -3,7 +3,7 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 
 // authController.register veya login'i bulamazsa hata verir.
-// 1. adımı doğru yaptıysan burası çalışır.
+// 1. adımı doğru yaptıysa burası çalışır.
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 

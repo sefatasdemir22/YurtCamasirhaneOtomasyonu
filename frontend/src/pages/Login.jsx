@@ -23,10 +23,10 @@ const Login = () => {
     const response = await api.post('/auth/login', { username, password });
     localStorage.setItem('token', response.data.token);
     
-    // GÜNCELLEME: Rolü ve Bloğu kaydet
+    // Rolü ve Bloğu kaydet
     if(response.data.user) {
       localStorage.setItem('userBlock', response.data.user.block_name || 'A');
-      localStorage.setItem('userRole', response.data.user.role); // <-- BURASI ÖNEMLİ
+      localStorage.setItem('userRole', response.data.user.role);
     }
 
     alert('Giriş Başarılı! 🚀');
@@ -40,7 +40,6 @@ const Login = () => {
     <ThemeProvider theme={defaultTheme}>
       <Grid container component="main" sx={{ height: '100vh' }}>
         <CssBaseline />
-        {/* SOL TARAFI DÜZELTTİK: Resim yerine şık bir Mavi Degrade */}
         <Grid
           item
           xs={false}
@@ -55,7 +54,7 @@ const Login = () => {
             flexDirection: 'column'
           }}
         >
-          {/* Sol tarafa yazı veya logo da koyabiliriz */}
+          
           <Typography variant="h3" fontWeight="bold">Yurt Otomasyon</Typography>
           <Typography variant="h6">Çamaşırhane Randevu Sistemi</Typography>
         </Grid>

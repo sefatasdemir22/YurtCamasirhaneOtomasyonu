@@ -9,13 +9,13 @@ const verifyToken = (req, res, next) => {
   }
 
   try {
-    // 2. Token'ı doğrula (Bizim gizli anahtarımızla mı imzalanmış?)
+    // 2. Token'ı doğrula
     // "Bearer <token>" formatını temizle
     const tokenClean = token.replace('Bearer ', '');
     
     const verified = jwt.verify(tokenClean, process.env.JWT_SECRET);
-    req.user = verified; // Token içindeki bilgileri (id, role, blockName) isteğe ekle
-    next(); // Sorun yok, geçebilirsin
+    req.user = verified;
+    next();
   } catch (err) {
     res.status(400).json({ error: 'Geçersiz Token!' });
   }
