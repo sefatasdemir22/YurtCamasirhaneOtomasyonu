@@ -39,16 +39,21 @@ Projeyi yerel ortamınızda çalıştırmak için aşağıdaki adımları izleyi
 
 ### 2. Projeyi İndirin
 git clone https://github.com/sefatasdemir22/YurtCamasirhaneOtomasyonu.git
+
 cd YurtCamasirhaneOtomasyonu
 
 ### 3. Veritabanını Başlatın (Docker)
 Ana dizinde terminali açın ve şu komutu çalıştırın:
+
 docker compose up -d
 
 ### 4. Backend'i Başlatın
 Yeni bir terminalde:
+
 cd backend
+
 npm install
+
 npm run dev
 
 *Sunucu http://localhost:3000 adresinde çalışacaktır.*
